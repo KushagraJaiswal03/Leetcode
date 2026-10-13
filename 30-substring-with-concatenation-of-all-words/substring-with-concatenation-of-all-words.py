@@ -1,0 +1,54 @@
+class Solution:
+    def findSubstring(self, s: str, words: List[str]) -> List[int]:
+        if not s or not words:
+            return []
+
+        word_len = len(words[0])
+        num_words = len(words)
+        total_len = word_len * num_words
+        s_len = len(s)
+
+        if s_len < total_len:
+            return []
+
+        word_count = {}
+        for word in words:
+            word_count[word] = word_count.get(word, 0) + 1
+
+        result = []
+
+        # Try each possible starting offset (0 to word_len - 1)
+        for offset in range(word_len):
+            left = offset
+            count = 0
+            window_count = {}
+
+            for right in range(offset, s_len - word_len + 1, word_len):
+                word = s[right:right + word_len]
+
+                if word in word_count:
+                    window_count[word] = window_count.get(word, 0) + 1
+                    count += 1
+
+                    # If this word's frequency exceeds what's needed, shrink from left
+                    while window_count[word] > word_count[word]:
+                        left_word = s[left:left + word_len]
+                        window_count[left_word] -= 1
+                        count -= 1
+                        left += word_len
+
+                    if count == num_words:
+                        result.append(left)
+                        # Shrink by one word from the left to continue searching
+                        left_word = s[left:left + word_len]
+                        window_count[left_word] -= 1
+                        count -= 1
+                        left += word_len
+                else:
+                    # Word not in words at all — window is broken, reset
+                    window_count.clear()
+                    count = 0
+                    left = right + word_len
+
+        return result
+        
